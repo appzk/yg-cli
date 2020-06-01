@@ -1,0 +1,167 @@
+#!/usr/bin/env node
+// commander.js，可以自动的解析命令和参数，用于处理用户输入的命令。
+// download-git-repo，下载并提取 git 仓库，用于下载项目模板。
+// Inquirer.js，通用的命令行用户界面集合，用于和用户进行交互。
+// handlebars.js，模板引擎，将用户提交的信息动态填充到文件中。
+// ora，下载过程久的话，可以用于显示下载中的动画效果。
+// chalk，可以给终端的字体加上颜色。
+// log-symbols，可以在终端上显示出 √ 或 × 等的图标。
+
+const download = require('download-git-repo'); //从仓库下载并提取git存储库（GitHub，GitLab，Bitbucket）
+const program = require('commander'); //命令行处理工具, 主要用于创建子命令和切割命令行参数并执行
+const exists = require('fs').existsSync; //node自带的fs模块下的existsSync方法，用于检测路径是否存在。（会阻塞）
+const path = require('path'); //node自带的path模块， 比如路径分割、拼接，文件路径格式化，json格式化等
+const ora = require('ora'); //用于命令行上的加载效果loading
+const userhome = require('user-home'); //用于获取用户的根目录
+const tildify = require('tildify'); //绝对路径转换为相对路径
+const chalk = require('chalk'); //用于高亮终端打印出的信息(命令行字体颜色)
+const inquirer = require('inquirer'); //常用的交互式命令行用户界面的集合。表现是控制台输出提问
+const rm = require('rimraf').sync; // 包装rm -rf命令,删除文件和文件夹
+const generate = require('../lib/generate-proj'); // 用于基于模板构建项目,自动生成
+const checkVersion = require('../lib/check-version'); // 检查版本
+
+const getTemplateList = require('../lib/get-template-list'); //获取本地模板的绝对路径
+
+/**
+ * Usage. 从命令中获取参数
+ * program.args[0]	模板类型
+ * program.args[1]	自定义项目名称
+ * program.clone		clone
+ * program.offline	离线
+ */
+// 配置commander的使用方法
+program
+  .usage('<template-name> [project-name]')
+  .option('-c, --clone', 'use git clone')
+  .option('--offline', 'use cached template');
+
+/**
+ * 定义commander的help方法
+ */
+
+program.on('--help', () => {
+  console.log('  Examples:');
+  console.log();
+  console.log('  $ explorer init');
+  console.log();
+});
+
+/**
+ * Help.
+ */
+
+function help() {
+  program.parse(process.argv);
+  if (program.args.length < 1) return program.help();
+}
+help();
+
+//检查版本并执行RunInit函数
+// checkVersion(() => {
+  RunInit();
+// });
+
+/**
+ * Check, download and generate the project.
+ */
+
+function RunInit() {
+  //本地模板存放仓库
+  const tmpRepo = path.resolve(userhome, '.explorer-templates');
+  //console.log("userhome:", userhome);
+  //=> '/Users/wuwh'
+  //获取模板列表 回调函数处理数据
+  getTemplateList(templateList => {
+    const choices = templateList.map(template => {
+      return {
+        name: `${template.name} - ${template.description}`,
+        value: template.name,
+      };
+    });
+
+    // inquirer.prompt(questions) -> promise
+    inquirer
+      .prompt([
+        /* Pass your questions in here */
+        {
+          type: 'list',
+          name: 'template',
+          choices,
+          message: 'Choose template you want',
+        },
+      ])
+      .then(answer => {
+        //模板名称
+        const tmpName = answer.template;
+        //远程模板地址
+        const tmpUrl = templateList.find(template => template.name === tmpName).url;
+        //假设本地模板路径
+        const tmpDest = path.join(tmpRepo, tmpName); 
+        if (exists(tmpDest)) { //如果存在本地模板路径，询问是否要用远程模版覆盖本地模版
+          inquirer
+            .prompt([
+              {
+                type: 'confirm',
+                name: 'override',
+                message: 'The template exists.Override?',
+              },
+            ])
+            .then(answer => {
+              if (answer.override) {
+                rm(tmpDest);
+                downloadAndGenerate(tmpRepo, tmpName, tmpUrl);
+              } else {
+                generate(tmpDest);
+              }
+            });
+        } else {
+          //下载远程模版
+          downloadAndGenerate(tmpRepo, tmpName, tmpUrl); 
+        }
+      });
+  });
+}
+
+/**
+ * Download a generate from a template repo. 从模版仓库下载模版
+ * @param {String} tmpRepo
+ * @param {String} tmpName
+ * @param {String} tmpUrl
+ */
+
+function downloadAndGenerate(tmpRepo, tmpName, tmpUrl) {
+  //启动控制台loading
+  const spinner = ora('downloading template');
+  const tmpDest = path.join(tmpRepo, tmpName); //本地模版路径
+  //询问选择
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'branch',
+        message: `the name of branch you need in ${tmpName}`,
+        default: 'master',
+      },
+    ])
+    .then(answer => {
+      spinner.start();
+      // download-git-repo: 从仓库下载代码-GitHub，GitLab，Bitbucket
+      // tmpName:模板名	tmpUrl:模板路径	clone:是否采用git clone模板   err：错误信息
+      download(`${tmpUrl}#${answer.branch}`, tmpDest, {
+          clone: false,
+        },
+        (err) => {
+          spinner.stop();
+          if (err) {
+            spinner.fail(chalk.red('Failed to download repo ' + tmpName + ': ' + err.message.trim()))
+            console.log(err)
+          } else {
+            spinner.succeed(chalk.green('download template ' + tmpName + 'successfully'))
+            
+            //控制台打印出模版信息，比如 Generated "my-project".
+            generate(tmpDest);
+          }
+        }
+      );
+    });
+}

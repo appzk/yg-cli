@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+// 文件主要是在用户输入“explorer”时，终端上显示参数的使用说明
+const program = require('commander');
+
+program
+  .version(require('../package').version) //版本号
+  .usage('<command> [options]')
+  .command('init', 'generate a new project from a template')
+
+program.parse(process.argv);
