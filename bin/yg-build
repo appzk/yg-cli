@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+
+const program = require('commander'); // 命令行处理工具, 主要用于创建子命令和切割命令行参数并执行
+const chalk = require('chalk'); // 用于高亮终端打印出的信息(命令行字体颜色)
+const inquirer = require('inquirer'); // 常用的交互式命令行用户界面的集合。表现是控制台输出提问
+const fs = require('fs');
+
+const prom = require('../scripts/prompt');
+const utils = require('../scripts/utils');
+ 
+
+/**
+ * Usage. 从命令中获取参数
+ * program.args[0]	模板类型
+ * program.args[1]	自定义项目名称
+ * program.clone		clone
+ * program.offline	离线
+ */
+// 配置commander的使用方法
+// npm run dev [-c ygego -s alpha]
+program
+  .usage('[option]', '--channel required')
+  .option('-c --channel [渠道名称]', 'channel: ygego || aode || etc.')
+  .option('-s --server [测试环境]', 'server: alpha || test || beta etc.')
+  .option('-x --channelserver [渠道:环境]', 'channel:server: ygego:alpha || aode:alpha || beta etc.')
+  .parse(process.argv);
+  
+const hasParams = utils.parseArg(program);
+if(hasParams){
+  envBuild(hasParams.channelName,hasParams.channelServer);
+}
+else{
+  console.log(chalk.green('未传入任何参数，请按提示选择'))//字体绿色
+  inquirer.prompt(prom).then(function (answers) {
+    console.log(answers);
+    const ansParams = utils.parseArg(answers);
+    envBuild(ansParams.channelName,ansParams.channelServer);
+  })
+}
+  
+/**
+ * 定义commander的help方法
+ */
+
+program.on('--help', () => {
+  console.log('  Examples:');
+  console.log();
+  console.log('  $ explorer init');
+  console.log();
+});
+
+/**
+ * Help.
+ */
+
+function help() {
+  program.parse(process.argv);
+  if (program.args.length < 1) return program.help();
+}
+
+function envBuild(channelName,channelServer){
+  
+  console.log(' channelName: %j', channelName);
+  console.log(' serverName: %j', channelServer);
+  // return;
+  if (!channelName && !channelServer){
+    throw new Error(chalk.red('please input  channelName and serverName'));
+  }
+  
+  const someFile = './app/web/utils/defaultSetting.json';
+  fs.readFile(someFile, 'utf8', function(err, data) {
+    if (err) {
+      return console.log(err);
+    }
+    const setting = JSON.parse(data.toString());//将字符串转换为json对象
+    // const result = data.replace(/channelenv/g, channelName);
+    setting.channelName = channelName;//定义一下总条数，为以后的分页打基础
+    console.log(setting);
+    const result = JSON.stringify(setting);
+
+    fs.writeFile(someFile, result, 'utf8', function(err) {
+      if (err) return console.log(err);
+      
+
+      
+      runUmi(channelName);  
+      
+    });
+  });
+}
+
+
+ 
+
+
+

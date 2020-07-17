@@ -5,7 +5,7 @@ const chalk = require('chalk'); // 用于高亮终端打印出的信息(命令�
 
 exports.Install = function() {
   var npm = findNpm();
-  runCmd(which.sync(npm), ['install'], function() {
+  this.runCmd(which.sync(npm), ['install'], function() {
     console.log(npm + ' install end');
   });
 };
@@ -31,7 +31,7 @@ exports.runUmi = function(channelName, channelServer) {
   // process.env.env=channelName;
   // process.env.PORT = 8701;
   process.env.NODE_ENV = 'development';
-  runCmd(
+  this.runCmd(
     which.sync('./node_modules/.bin/egg-bin'),
     ['dev', '--port=8701', `--YG_ENV=${channelServer}`, '--env=ygego'],
     function() {
@@ -40,6 +40,20 @@ exports.runUmi = function(channelName, channelServer) {
   );
   // PORT=8701 NODE_ENV=development egg-bin dev --sticky
   //  --YG_ENV=alpha --env=ygego --port=8701
+};
+
+exports.runStart = function() {
+  process.env.NODE_ENV = 'production';
+  //     "start": "cross-env egg-scripts start --daemon --title=portal-saas-ssr",
+  //     "debug": "cross-env RM_TMPDIR=none COMPRESS=none egg-bin debug",
+
+  this.runCmd(
+    which.sync('./node_modules/.bin/egg-scripts'),
+    ['start', '--daemon', '--title=portal-saas-ssr', '--port=8701'],
+    function() {
+      console.log('yg egg start:%j dev end', process.env.NODE_ENV);
+    }
+  );
 };
 
 // 开启子进程来执行npm install命令
