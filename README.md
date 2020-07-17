@@ -9,7 +9,7 @@
 
 - 用法
 
-### `explorer init`
+### `yg init`
 
 **前端自动化构建流程：**
 
@@ -29,3 +29,15 @@
     D)项目路径
     7. 进入构建过程
     8. 构建完毕，进入开发阶段
+
+###
+
+直接输入
+yg dev -- -x ygego:alpha
+
+交互式
+yg dev
+
+\$ ygego:alpha
+选择 ygego
+选择 alpha
