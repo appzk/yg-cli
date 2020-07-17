@@ -4,9 +4,11 @@
 const program = require('commander');
 
 program
-  .version(require('../package').version) //版本号
+  .version(require('../package').version) // 版本号
   .usage('<command> [options]')
   .command('init', 'generate a new project from a template')
   .command('dev', 'yg ssr dev')
+  .command('build', 'yg ssr build')
+  .command('start', 'yg start server');
 
 program.parse(process.argv);
