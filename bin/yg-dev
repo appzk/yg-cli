@@ -4,7 +4,7 @@
 const program = require('commander'); // 命令行处理工具, 主要用于创建子命令和切割命令行参数并执行
 const chalk = require('chalk'); // 用于高亮终端打印出的信息(命令行字体颜色)
 const inquirer = require('inquirer'); // 常用的交互式命令行用户界面的集合。表现是控制台输出提问
-const fs = require('fs');
+const path = require('path');
 
 const prom = require('../scripts/prompt');
 const utils = require('../scripts/utils');
@@ -29,14 +29,14 @@ program
   
   const hasParams = utils.parseArg(program);
   if(hasParams){
-    envDev(hasParams.channelName,hasParams.channelServer);
+    envDev(hasParams);
   }
   else{
       console.log(chalk.green('未传入任何参数，请按提示选择'))//字体绿色
       inquirer.prompt(prom).then(function (answers) {
-        console.log(answers);
+        // console.log(answers);
         const ansParams = utils.parseArg(answers);
-        envDev(ansParams.channelName,ansParams.channelServer);
+        envDev(ansParams);
       })
       
       
@@ -63,34 +63,14 @@ function help() {
 }
 
 
-function envDev(channelName,channelServer){
+async function envDev(params){
   
-  console.log(' channelName: %j', channelName);
-  console.log(' serverName: %j', channelServer);
-  // return;
-  if (!channelName && !channelServer){
-    throw new Error(chalk.red('please input  channelName and serverName'));
-  }
-  const someFile = './app/web/utils/defaultSetting.json';
-  fs.readFile(someFile, 'utf8', function(err, data) {
-    if (err) {
-      throw new Error(chalk.red(err));
-    }
-    const setting = JSON.parse(data.toString());//将字符串转换为json对象
-    // const result = data.replace(/channelenv/g, channelName);
-    setting.channelName = channelName;//定义一下总条数，为以后的分页打基础
-    console.log(setting);
-    const result = JSON.stringify(setting);
-
-    fs.writeFile(someFile, result, 'utf8', function(err) {
-      if (err) return console.log(err);
-      
-
-      
-      utils.runUmi(channelName,channelServer);  
-      
-    });
-  });
+  // ansParams.channelName,ansParams.channelServer
+  utils.checkArgs(params);
+  await utils.updateSettings({key:'channelName',value:params.channelName});
+  console.log('finish');
+  utils.runSaaSDev(params);  
+  
 }
 
 

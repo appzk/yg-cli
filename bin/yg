@@ -9,6 +9,7 @@ program
   .command('init', 'generate a new project from a template')
   .command('dev', 'yg ssr dev')
   .command('build', 'yg ssr build')
-  .command('start', 'yg start server');
+  .command('start', 'yg start server')
+  .command('stop', 'yg stop server');
 
 program.parse(process.argv);

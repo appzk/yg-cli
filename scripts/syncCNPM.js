@@ -1,16 +1,9 @@
 const execa = require('execa');
-const chalk = require('chalk');
+const utils = require('./utils');
 const { join } = require('path');
 
 process.setMaxListeners(Infinity);
 
-function logStep(name) {
-  console.log(`${chalk.gray('>> Release:')} ${chalk.magenta.bold(name)}`);
-}
-// function printErrorAndExit(message) {
-//   console.error(chalk.red(message));
-//   process.exit(1);
-// }
 module.exports = function(publishPkgs) {
   const pkg = require(join(__dirname, '../package.json')).name;
   console.log(pkg, 'pkg');
@@ -27,5 +20,5 @@ module.exports = function(publishPkgs) {
     return subprocess;
   });
   Promise.all(commands);
-  logStep('done');
+  utils.logStep('done');
 };

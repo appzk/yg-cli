@@ -1,6 +1,6 @@
 {
   "name": "yg-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple CLI for front-end engineering automation construction tool.",
   "preferGlobal": true,
   "bin": {
@@ -32,7 +32,8 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
-    "inquirer": "^7.3.2"
+    "inquirer": "^7.3.2",
+    "rc-config-loader": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.2",
@@ -43,10 +44,17 @@
     "@testing-library/user-event": "^7.1.2",
     "cz-conventional-changelog": "^3.2.0",
     "debug": "^4.1.1",
+    "egg": "^2.27.0",
+    "egg-bin": "^4.15.0",
+    "egg-http-proxy": "^1.0.0",
+    "egg-scripts": "^2.10.0",
+    "egg-view-assets": "^1.3.0",
+    "egg-view-nunjucks": "^2.2.0",
     "husky": "^1.3.1",
     "jest": "24.9.0",
     "lint-staged": "^8.0.4",
     "meow": "^5.0.0",
+    "npm-which": "^3.0.1",
     "prettier": "1.18.2"
   },
   "husky": {

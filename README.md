@@ -7,9 +7,72 @@
 
 ### `npm install yg-cli -g`
 
+- 配置文件 .ygclirc
+
+当前环境指定的配置文件，dev 与 build 会更新文件
+例子:examples
+
+```
+module.exports = { envfile: {path: 'examples/defaultSetting.json',key:'channelName'} };
+
+```
+
+egg 环境
+
+```
+module.exports = { envfile: {path: 'app/web/utils/defaultSetting.json',key:'channelName'} };
+
+```
+
 - 用法
 
-### `yg init`
+### `yg dev`
+
+直接输入
+
+`yg dev -- -x ygego:alpha`
+
+交互式
+
+`yg dev`
+
+手工输入 [saas 门户渠道:环境]
+
+```
+$ ygego:alpha
+```
+
+不输入，直接回车，默认按选择交互方式
+
+```
+选择 ygego
+选择 alpha
+```
+
+### `yg build`
+
+直接输入
+
+`yg build -- -x ygego:alpha`
+
+交互式
+
+`yg build`
+
+手工输入 [saas 门户渠道:环境]
+
+```
+$ ygego:alpha
+```
+
+不输入，直接回车，默认按选择交互方式
+
+```
+选择 ygego
+选择 alpha
+```
+
+### TODO:`yg init`
 
 **前端自动化构建流程：**
 
@@ -29,15 +92,3 @@
     D)项目路径
     7. 进入构建过程
     8. 构建完毕，进入开发阶段
-
-###
-
-直接输入
-yg dev -- -x ygego:alpha
-
-交互式
-yg dev
-
-\$ ygego:alpha
-选择 ygego
-选择 alpha
