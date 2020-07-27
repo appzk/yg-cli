@@ -1,12 +1,14 @@
 {
-  "name": "yg-cli",
+  "name": "@ygyg/yg-cli",
   "version": "1.0.1",
   "description": "A simple CLI for front-end engineering automation construction tool.",
   "preferGlobal": true,
   "bin": {
     "yg": "bin/yg",
     "yg-init": "bin/yg-init",
-    "yg-list": "bin/yg-list"
+    "yg-dev": "bin/yg-dev",
+    "yg-start": "bin/yg-start",
+    "yg-build": "bin/yg-build"
   },
   "repository": {
     "type": "git",
@@ -28,6 +30,7 @@
     "lint": "eslint test/e2e/test*.js lib bin/* --env",
     "e2e": "rimraf test/e2e/mock-template-build --slow 1000",
     "unit": "jest --config test/unit/jest.conf.js --coverage",
+    "sync:tnpm": "node -e 'require(\"./scripts/syncCNPM\")()'",
     "commit": "git-cz"
   },
   "dependencies": {

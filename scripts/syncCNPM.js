@@ -9,7 +9,7 @@ module.exports = function(publishPkgs) {
   console.log(pkg, 'pkg');
   // Sync version to root package.json
 
-  logStep('sync packages to cnpm');
+  utils.logStep('sync packages to cnpm');
   // syncTNPM(pkgs);
   const pkgs = [pkg];
   console.log(pkgs);
