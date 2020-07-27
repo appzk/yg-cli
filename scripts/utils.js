@@ -11,7 +11,7 @@ const { rcFile } = require('rc-config-loader');
 const { join } = path;
 
 exports.logStep = function(name) {
-  console.log(`${chalk.gray('>> Release:')} ${chalk.magenta.bold(name)}`);
+  console.log(`${chalk.green('[ygd-scripts]')} ${chalk.magenta.bold(name)}`);
 };
 
 exports.printErrorAndExit = function(message) {
@@ -69,7 +69,7 @@ exports.runSaaSDev = function(params) {
       'dev',
       `--port=${process.env.PORT}`,
       `--YG_ENV=${channelServer}`,
-      `--env=${channelServer}`,
+      `--env=${channelName}`,
     ],
     () => {
       this.logStep(`umi:${channelName} dev end`);
@@ -80,12 +80,35 @@ exports.runSaaSDev = function(params) {
   //  --YG_ENV=alpha --env=ygego --port=8701
 };
 
-exports.runStart = function() {
+exports.runStartLocal = async function(params) {
+  const { channelName, channelServer } = params;
+  process.env.NODE_ENV = 'production';
+  process.env.YG_CHANNEL = channelName;
+  process.env.YG_ENV = channelServer;
+  //     "start": "cross-env egg-scripts start --daemon --title=portal-saas-ssr",
+  //     "debug": "cross-env RM_TMPDIR=none COMPRESS=none egg-bin debug",
+
+  await this.runCmd(
+    'egg-scripts',
+    [
+      'start',
+      '--daemon',
+      `--title=${process.env.TITLE}`,
+      `--YG_ENV=${channelServer}`,
+      `--port=${process.env.PORT}`,
+    ],
+    () => {
+      this.logStep(`yg egg local start: ${process.env.NODE_ENV} dev ok`);
+    }
+  );
+};
+
+exports.runStart = async function() {
   process.env.NODE_ENV = 'production';
   //     "start": "cross-env egg-scripts start --daemon --title=portal-saas-ssr",
   //     "debug": "cross-env RM_TMPDIR=none COMPRESS=none egg-bin debug",
 
-  this.runCmd(
+  await this.runCmd(
     'egg-scripts',
     [
       'start',
@@ -94,27 +117,41 @@ exports.runStart = function() {
       `--port=${process.env.PORT}`,
     ],
     () => {
-      this.logStep('yg egg start:%j dev end', process.env.NODE_ENV);
+      this.logStep(`yg egg deploy start: ${process.env.NODE_ENV} dev ok`);
     }
   );
 };
 
-exports.runStop = function() {
+exports.runStop = async function(fn) {
   //     "start": "cross-env egg-scripts start --daemon --title=portal-saas-ssr",
   //     "debug": "cross-env RM_TMPDIR=none COMPRESS=none egg-bin debug",
+  await this.runCmd(
+    'egg-scripts',
+    ['stop', `--title=${process.env.TITLE}`],
+    () => {
+      if (fn) {
+        fn();
+      }
+      this.logStep(`yg egg stop: ${process.env.NODE_ENV} dev ok`);
+    }
+  );
+};
 
-  this.runCmd('egg-scripts', ['stop', `--title=${process.env.TITLE}`], () => {
-    this.logStep('yg egg stop:%j dev end', process.env.NODE_ENV);
+exports.runReStart = async function() {
+  //     "start": "cross-env egg-scripts start --daemon --title=portal-saas-ssr",
+  //     "debug": "cross-env RM_TMPDIR=none COMPRESS=none egg-bin debug",
+  await this.runStop(() => {
+    this.runStart();
   });
 };
 
 // 开启子进程来执行npm install命令
-exports.runCmd = function(cmdName, args, fn) {
+exports.runCmd = async function(cmdName, args, fn) {
   args = args || [];
 
   // How to sync node_modules with actual package.json?
   // If your new branch has new npm packages or updated version dependencies, just run $ npm install again after switching branches.
-  const cmd = which.sync(cmdName, { nothrow: true });
+  const cmd = await which.sync(cmdName, { nothrow: true });
   this.logStep(cmd, '----cmd');
   if (!cmd) {
     this.logStep(`not found: ${cmdName}`);
@@ -126,7 +163,7 @@ exports.runCmd = function(cmdName, args, fn) {
     env: process.env,
   });
 
-  runner.on('close', function(code) {
+  await runner.on('close', function(code) {
     if (fn) {
       fn(code);
     }
@@ -134,7 +171,7 @@ exports.runCmd = function(cmdName, args, fn) {
 };
 
 exports.parseArg = function(opt) {
-  const { channel, server, channelserver } = opt;
+  const { channel, server, channelserver, type } = opt;
   const f = channel !== undefined;
   const arr_channel =
     !!channelserver && channelserver.indexOf(':') !== -1
@@ -145,7 +182,7 @@ exports.parseArg = function(opt) {
   this.logStep(chalk.green('当前正在准备编译环境...'), arr_channel);
 
   if (channelName !== undefined && channelServer !== undefined) {
-    return { channelName, channelServer };
+    return { channelName, channelServer, type };
   }
   return undefined;
 };
@@ -194,6 +231,7 @@ exports.updateSettings = async function(opt) {
     setting[opt.key] = opt.value; //定义一下总条数，为以后的分页打基础
     const result = JSON.stringify(setting);
     console.log('result=', result);
+    this.logStep(`success write setting : ${opt.value}`);
     await writeFile(someFile, result).then(
       data => {
         this.logStep(`success write setting : ${opt.value}`);
@@ -211,8 +249,9 @@ exports.updateSettings = async function(opt) {
  */
 exports.checkArgs = function(params) {
   const { channelName, channelServer } = params;
-  console.log(' channelName: %j', channelName);
-  console.log(' serverName: %j', channelServer);
+  this.logStep(`channelName : ${channelName}`);
+  this.logStep(`serverName : ${channelServer}`);
+
   // return;
   if (!channelName && !channelServer) {
     this.printErrorAndExit('please input  channelName and serverName');

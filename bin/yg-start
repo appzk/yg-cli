@@ -18,21 +18,32 @@ const utils = require('../scripts/utils');
 // npm run dev [-c ygego -s alpha]
 program
   .usage('[option]', '--channel required')
-  .option('-t --type [typeName]', 'type: start | debug.')
+  .option('-c --channel [渠道名称]', 'channel: ygego || aode || etc.')
+  .option('-s --server [测试环境]', 'server: alpha || test || beta etc.')
+  .option('-x --channelserver [渠道:环境]', 'channel:server: ygego:alpha || aode:alpha || beta etc.')
+  .option('-t --type [typeName]', 'type: start | debug | reload.')
   .parse(process.argv);
   
-  const {type='start'} = program;
   console.log('当前正在准备启动环境...');
-  
-  if(type !== undefined){
+  const hasParams = utils.parseArg(program);
+  const {type} = program;
+  if(hasParams){
+    envStartLocal(hasParams);
+  }
+  else if (type!==undefined){
     envStart(type);
   }
   else{
-      console.log('未输入任何参数');
-      // 通常alpha 需要用户输入，不需要写默认值
-      program.help();
+    console.log(chalk.green('未传入任何参数，请按提示选择'))//字体绿色
+    inquirer.prompt(prom).then(function (answers) {
+      // console.log(answers);
+      const ansParams = utils.parseArg(answers);
+      envStartLocal(ansParams);
+    })
+      
       
   }
+
 /**
  * 定义commander的help方法
  */
@@ -44,13 +55,18 @@ program.on('--help', () => {
   console.log();
 });
 
-function envStart(type){
+async function envStart(type){
   
   console.log(' type: %j', type);
   if (!type){
     throw new Error(chalk.red('please input  type'));
   }
-  if (type==='start'){utils.runStart();  }
+  if (type==='start'){
+    await utils.runStart();  
+  }
+  else if (type==='reload'){
+    await utils.runReStart();
+  }
   else{
     //TODO 是否需要debug
    console.log('');
@@ -58,8 +74,18 @@ function envStart(type){
       
   
 }
-
-
+// TODO: 项目中有细节需跟进
+async function envStartLocal(params){
+  
+  // ansParams.channelName,ansParams.channelServer
+  utils.checkArgs(params);
+  await utils.updateSettings({key:'channelName',value:params.channelName});
+  console.log('finish');
+  await utils.runStartLocal(params);  
+  // else if (type==='reload'){
+  //   await utils.runReStartLocal(params);
+  // }
+}
 
 
 
