@@ -61,7 +61,7 @@ function help() {
 async function envBuild(params){
   
   utils.checkArgs(params);
-  await utils.updateSettings({key:'channelName',value:params.channelName});
+  await utils.updateSettings(params);
   utils.runSaaSBuild(params);  
 
 }

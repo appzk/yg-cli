@@ -5,6 +5,7 @@ const childProcess = require('child_process');
 const exists = require('fs').existsSync; // node自带的fs模块下的existsSync方法，用于检测路径是否存在。（会阻塞）
 const chalk = require('chalk'); // 用于高亮终端打印出的信息(命令行字体颜色)
 const which = require('npm-which')(__dirname);
+const lodash = require('lodash');
 const util = require('util');
 const { rcFile } = require('rc-config-loader');
 
@@ -47,16 +48,44 @@ exports.findNpm = function() {
  */
 exports.runSaaSBuild = function(params) {
   const { channelName, channelServer } = params;
+
+  const currDomain = this.parseDomain(params);
+  this.logStep(`currDomain : ${currDomain}`);
+  process.env.YG_DOMAIN = currDomain;
+
   process.env.YG_CHANNEL = channelName;
   process.env.UMI_ENV = 'prod';
   process.env.NODE_ENV = 'production';
+  process.env.YG_ENV = channelServer;
   this.runCmd('umi', ['build'], function() {
     console.log('umi:%j build end', channelName);
   });
 };
 
+exports.parseDomain = function(params) {
+  const { channelName, channelServer } = params;
+  if (channelServer !== undefined && lodash.startsWith(channelServer, 'http')) {
+    this.logStep(`http-domain=${channelServer}`);
+    return channelServer;
+  } else {
+    if (channelServer === undefined) {
+      this.printErrorAndExit('未指定环境');
+    }
+    if (channelServer === 'beta') {
+      return channelName === 'ygego'
+        ? `http://www.ygego.${channelServer}`
+        : `http://${channelName}.ygego.${channelServer}`;
+    } else if (channelServer !== 'prod') {
+      return `http://${channelName}.channel-desk.${channelName}.${channelServer}`;
+    }
+  }
+};
+
 exports.runSaaSDev = function(params) {
   const { channelName, channelServer } = params;
+  const currDomain = this.parseDomain(params);
+  this.logStep(`currDomain : ${currDomain}`);
+  process.env.YG_DOMAIN = currDomain;
   process.env.YG_CHANNEL = channelName;
   process.env.YG_ENV = channelServer;
   // process.env.env=channelName;
@@ -69,6 +98,7 @@ exports.runSaaSDev = function(params) {
       'dev',
       `--port=${process.env.PORT}`,
       `--YG_ENV=${channelServer}`,
+      `--YG_DOMAIN=${currDomain}`,
       `--env=${channelName}`,
     ],
     () => {
@@ -178,8 +208,11 @@ exports.parseArg = function(opt) {
       ? channelserver.split(':')
       : [];
   const channelName = f ? channel : arr_channel[0];
-  const channelServer = f ? server : arr_channel[1];
-  this.logStep(chalk.green('当前正在准备编译环境...'), arr_channel);
+  let channelServer = f
+    ? server
+    : channelserver.substring(channelName.length + 1); // arr_channel[1];
+
+  this.logStep('当前正在准备编译环境...');
 
   if (channelName !== undefined && channelServer !== undefined) {
     return { channelName, channelServer, type };
@@ -228,13 +261,19 @@ exports.updateSettings = async function(opt) {
     }
   );
   if (setting) {
-    setting[opt.key] = opt.value; //定义一下总条数，为以后的分页打基础
+    // setting[opt.key] = opt.value; //定义
+
+    lodash.forIn(opt, (value, key) => {
+      setting[key] = value; //重新赋值
+      this.logStep(`success write setting : ${key}=${value}`);
+    });
+
     const result = JSON.stringify(setting);
     console.log('result=', result);
-    this.logStep(`success write setting : ${opt.value}`);
+
     await writeFile(someFile, result).then(
       data => {
-        this.logStep(`success write setting : ${opt.value}`);
+        this.logStep(`success write setting.`);
       },
       err => {
         console.error(err);

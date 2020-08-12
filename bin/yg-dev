@@ -67,7 +67,7 @@ async function envDev(params){
   
   // ansParams.channelName,ansParams.channelServer
   utils.checkArgs(params);
-  await utils.updateSettings({key:'channelName',value:params.channelName});
+  await utils.updateSettings(params);
   console.log('finish');
   utils.runSaaSDev(params);  
   
