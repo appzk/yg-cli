@@ -208,10 +208,11 @@ exports.parseArg = function(opt) {
       ? channelserver.split(':')
       : [];
   const channelName = f ? channel : arr_channel[0];
-  let channelServer = f
-    ? server
-    : channelserver.substring(channelName.length + 1); // arr_channel[1];
 
+  let channelServer = f ? server : arr_channel[1];
+  if (!!channelServer && channelServer.indexOf('http') !== -1) {
+    channelServer = channelserver.substring(channelName.length + 1);
+  }
   this.logStep('当前正在准备编译环境...');
 
   if (channelName !== undefined && channelServer !== undefined) {
