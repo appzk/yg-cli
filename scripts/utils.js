@@ -65,13 +65,14 @@ exports.runSaaSBuild = function(params) {
 exports.parseDomain = function(params) {
   const { channelName, channelServer } = params;
   if (channelServer !== undefined && lodash.startsWith(channelServer, 'http')) {
+    // TODO: 由于新规则httpUrls根据defaultSetting的参数读取，此处先不处理跳转逻辑
     this.logStep(`http-domain=${channelServer}`);
     return channelServer;
   } else {
     if (channelServer === undefined) {
       this.printErrorAndExit('未指定环境');
     }
-    if (channelServer === 'beta') {
+    if (channelServer === 'beta' || channelServer === 'beta1') {
       return channelName === 'ygego'
         ? `http://www.ygego.${channelServer}`
         : `http://${channelName}.ygego.${channelServer}`;
