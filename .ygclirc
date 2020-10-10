@@ -1,1 +1,9 @@
-module.exports = { envfile: {path: 'examples/defaultSetting.json'} };
+module.exports = { 
+  envfile: {
+    path: 'examples/defaultSetting.json',
+  },
+  commands:{
+    build:'umi',
+    dev:'umi
+  }
+};

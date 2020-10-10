@@ -5,8 +5,8 @@ const chalk = require('chalk'); // 用于高亮终端打印出的信息(命令�
 const inquirer = require('inquirer'); // 常用的交互式命令行用户界面的集合。表现是控制台输出提问
 const fs = require('fs');
 
-const prom = require('../scripts/prompt');
-const utils = require('../scripts/utils');
+const prom = require('../lib/prompt');
+const utils = require('../lib/utils');
  
 
 /**
