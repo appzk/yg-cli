@@ -80,7 +80,6 @@ async function envStartLocal(params){
   // ansParams.channelName,ansParams.channelServer
   utils.checkArgs(params);
   await utils.updateSettings(params);
-  console.log('finish');
   await utils.runStartLocal(params);  
   // else if (type==='reload'){
   //   await utils.runReStartLocal(params);
