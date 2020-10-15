@@ -1,6 +1,6 @@
 {
   "name": "@ygyg/yg-cli",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "A simple CLI for front-end engineering automation construction tool.",
   "preferGlobal": true,
   "bin": {
