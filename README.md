@@ -72,6 +72,22 @@ $ ygego:alpha
 选择 alpha
 ```
 
+### yg urls 生成 httpUrls
+
+```
+apiprefix: {
+    url:'http://{channelName}.ygego.{channelServer}',
+    envs:[
+        'alpha1','alpha2','alpha3','alpha4','alpha5','alpha5',
+        'test1','test2','test3','test4','test5','test5','test6',
+    ],
+},
+```
+
+由 apiprefix 的 envs 指定
+
+生成至指定的 defaultSetting.json 中
+
 ### TODO:`yg init`
 
 **前端自动化构建流程：**
