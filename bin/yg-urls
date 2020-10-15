@@ -1,0 +1,52 @@
+#!/usr/bin/env node
+
+
+const program = require('commander'); // 命令行处理工具, 主要用于创建子命令和切割命令行参数并执行
+const chalk = require('chalk'); // 用于高亮终端打印出的信息(命令行字体颜色)
+const inquirer = require('inquirer'); // 常用的交互式命令行用户界面的集合。表现是控制台输出提问
+const path = require('path');
+
+const prom = require('../lib/prompt');
+const utils = require('../lib/utils');
+
+/**
+ * Usage. 从命令中获取参数
+ * program.args[0]	模板类型
+ * program.args[1]	自定义项目名称
+ * program.clone		clone
+ * program.offline	离线
+ */
+// 配置commander的使用方法
+// npm run dev [-c ygego -s alpha]
+program
+  .parse(process.argv);
+  
+  // const {channel,server,channelserver} = program;
+  
+  // const hasParams = utils.parseArg(program);
+  envUrls();
+/**
+ * 定义commander的help方法
+ */
+
+program.on('--help', () => {
+  console.log('  Examples:');
+  console.log();
+  console.log('  $ yg dev -- -x ygego:alpha');
+  console.log();
+});
+
+
+/**
+ * Help.
+ */
+
+function help() {
+  program.parse(process.argv);
+  if (program.args.length < 1) return program.help();
+}
+
+
+async function envUrls(){
+  await utils.updateSettingUrls();
+}

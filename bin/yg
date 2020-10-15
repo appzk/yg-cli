@@ -10,6 +10,7 @@ program
   .command('dev', 'yg ssr dev')
   .command('build', 'yg ssr build')
   .command('start', 'yg start server')
-  .command('stop', 'yg stop server');
+  .command('stop', 'yg stop server')
+  .command('urls', 'yg urls for httpUrls server');
 
 program.parse(process.argv);
