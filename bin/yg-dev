@@ -67,6 +67,7 @@ async function envDev(params){
   
   // ansParams.channelName,ansParams.channelServer
   utils.checkArgs(params);
+  await utils.updateSettingUrls(); // httpUrls bind
   await utils.updateSettings(params);
   utils.runSaaSDev(params);  
   
